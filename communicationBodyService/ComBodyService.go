@@ -31,7 +31,7 @@ func NewStoreService()(ss *StoreService){
 }
 
 func processStoringRoutine(ch <-chan ComLog.CommunicationLog, database sql.DB) {
-	log.Println("Routine start")
+	log.Println("-> ready to serve")
 	for commLog := range ch {
 
 		log.Println("<-ch")

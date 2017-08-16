@@ -9,14 +9,10 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"bytes"
 	"io/ioutil"
-	"fmt"
-	"strings"
-	"crypto/md5"
-	"encoding/hex"
 )
 
-const HeaderRequestKey = "Moxy-Request-Key"
-const HeaderSoapAction = "Soapaction"
+const headerRequestKey = "Moxy-Request-Key"
+const headerSoapAction = "Soapaction"
 
 type ServeAndStoreStrategy struct {
 }
@@ -26,7 +22,7 @@ func NewServeAndStoreStrategy() (strat ServeAndStoreStrategy) {
 }
 
 func (s ServeAndStoreStrategy) Start(operationPort *string, verbose *bool) {
-	log.Println("Proxy start")
+	log.Println("Proxy server start")
 	comLogCh := make(chan ComLog.CommunicationLog)
 
 	proxyInstance := goproxy.NewProxyHttpServer()
@@ -37,7 +33,8 @@ func (s ServeAndStoreStrategy) Start(operationPort *string, verbose *bool) {
 		rqBodyBytes, _ := ioutil.ReadAll(r.Body)
 		rqBodyString := string(rqBodyBytes)
 		r.Body = ioutil.NopCloser(bytes.NewBuffer(rqBodyBytes))
-		r.Header.Set(HeaderRequestKey, stripAndGetHash(rqBodyString))
+		comHashedBody := commStoreService.NewComHashedBody(rqBodyString)
+		r.Header.Set(headerRequestKey, comHashedBody.Output)
 		return r, nil
 	})
 
@@ -45,16 +42,14 @@ func (s ServeAndStoreStrategy) Start(operationPort *string, verbose *bool) {
 		func(r *http.Response, ctx *goproxy.ProxyCtx) *http.Response {
 			commLog := ComLog.CommunicationLog{}
 
-			commLog.Target = ctx.Req.Header.Get(HeaderSoapAction)
+			commLog.Target = ctx.Req.Header.Get(headerSoapAction)
 
-			commLog.ResponseKey = string(ctx.Req.Header.Get(HeaderRequestKey))
+			commLog.ResponseKey = string(ctx.Req.Header.Get(headerRequestKey))
 
 			rsBodyBytes, _ := ioutil.ReadAll(r.Body)
 			rsBodyString := string(rsBodyBytes)
 			commLog.ResponseBody = string(rsBodyString)
 			r.Body = ioutil.NopCloser(bytes.NewBuffer(rsBodyBytes))
-
-			fmt.Printf("%#v\n", ctx.Req)
 
 			comLogCh <- commLog
 			log.Println("ch<-")
@@ -67,11 +62,4 @@ func (s ServeAndStoreStrategy) Start(operationPort *string, verbose *bool) {
 	commBody.ProcessStoring(comLogCh)
 
 	log.Fatal(http.ListenAndServe(":" + *operationPort, proxyInstance))
-}
-
-func stripAndGetHash(initial string) string {
-	soapBodyString := strings.TrimLeft(strings.TrimRight(initial, "</soap:Body>"), "<soap:Body>")
-	hasher := md5.New()
-	hasher.Write([]byte(soapBodyString))
-	return hex.EncodeToString(hasher.Sum(nil))
 }
