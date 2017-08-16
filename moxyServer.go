@@ -10,7 +10,7 @@ import (
 	"errors"
 )
 
-const MaxProcesses = 8
+const MaxProcesses = 2
 
 const ServingPort = "19501"
 

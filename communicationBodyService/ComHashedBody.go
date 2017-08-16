@@ -29,6 +29,8 @@ func stripAndGetHash(initial string) string {
 
 	soapBodyString = removeTimestamp(soapBodyString)
 
+	soapBodyString = removeCorellationId(soapBodyString)
+
 	hasher := md5.New()
 	hasher.Write([]byte(soapBodyString))
 	return hex.EncodeToString(hasher.Sum(nil))
@@ -43,12 +45,20 @@ func removeWhitespaces(s string) string {
 }
 
 func removeTimestamp(str string) string {
-	start := strings.Index(str, "TimeStamp=|")
+	return removeBetweenPattern(str, "TimeStamp=|")
+}
+
+func removeCorellationId(str string) string {
+	return removeBetweenPattern(str, "CorrelationID=|")
+}
+
+func removeBetweenPattern(str string, pattern string) string {
+	start := strings.Index(str, pattern)
 	if start == -1 {
 		return str
 	}
 
-	startOffsetEnd := start + len("TimeStamp=|")
+	startOffsetEnd := start + len(pattern)
 
 	end := strings.Index(str[startOffsetEnd:], "|")
 

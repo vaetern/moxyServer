@@ -2,7 +2,7 @@ package servingStrategies
 
 import (
 	"github.com/elazarl/goproxy"
-	commStoreService "github.com/vaetern/moxyServer/communicationBodyService"
+	comService "github.com/vaetern/moxyServer/communicationBodyService"
 	"github.com/vaetern/moxyServer/servingStrategies/ComLog"
 	"net/http"
 	"log"
@@ -12,7 +12,7 @@ import (
 )
 
 const headerRequestKey = "Moxy-Request-Key"
-const headerSoapAction = "Soapaction"
+const HeaderSoapAction = "Soapaction"
 
 type ServeAndStoreStrategy struct {
 }
@@ -33,7 +33,7 @@ func (s ServeAndStoreStrategy) Start(operationPort *string, verbose *bool) {
 		rqBodyBytes, _ := ioutil.ReadAll(r.Body)
 		rqBodyString := string(rqBodyBytes)
 		r.Body = ioutil.NopCloser(bytes.NewBuffer(rqBodyBytes))
-		comHashedBody := commStoreService.NewComHashedBody(rqBodyString)
+		comHashedBody := comService.NewComHashedBody(rqBodyString)
 		r.Header.Set(headerRequestKey, comHashedBody.Output)
 		return r, nil
 	})
@@ -42,7 +42,7 @@ func (s ServeAndStoreStrategy) Start(operationPort *string, verbose *bool) {
 		func(r *http.Response, ctx *goproxy.ProxyCtx) *http.Response {
 			commLog := ComLog.CommunicationLog{}
 
-			commLog.Target = ctx.Req.Header.Get(headerSoapAction)
+			commLog.Target = ctx.Req.Header.Get(HeaderSoapAction)
 
 			commLog.ResponseKey = string(ctx.Req.Header.Get(headerRequestKey))
 
@@ -57,8 +57,8 @@ func (s ServeAndStoreStrategy) Start(operationPort *string, verbose *bool) {
 		})
 	proxyInstance.Verbose = *verbose
 
-	commBody := commStoreService.NewStoreService()
-	commBody.ProcessStoring(comLogCh)
+	storeService := comService.NewStoreService()
+	storeService.ProcessStoring(comLogCh)
 
 	log.Fatal(http.ListenAndServe(":" + *operationPort, proxyInstance))
 }
