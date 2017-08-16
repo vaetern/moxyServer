@@ -5,16 +5,29 @@ import (
 	"time"
 	"log"
 	"database/sql"
+	"os"
 )
 
 type StoreService struct {
-	input     string
-	output    string
-	hashValue string
+	db *sql.DB
 }
 
-func (comServ StoreService) ProcessStoring(ch <-chan ComLog.CommunicationLog, database sql.DB) {
-	go processStoringRoutine(ch, database)
+func (ss StoreService) ProcessStoring(ch <-chan ComLog.CommunicationLog) {
+	go processStoringRoutine(ch, *ss.db)
+}
+
+func NewStoreService()(ss *StoreService){
+	dataSourceName := "./local.db"
+	database, err := sql.Open("sqlite3", dataSourceName)
+
+	if err != nil {
+		log.Fatal(err)
+		os.Exit(1)
+	}
+
+	ss = &StoreService{db: database}
+
+	return ss
 }
 
 func processStoringRoutine(ch <-chan ComLog.CommunicationLog, database sql.DB) {
@@ -29,7 +42,4 @@ func processStoringRoutine(ch <-chan ComLog.CommunicationLog, database sql.DB) {
 			log.Println("Error writing to db")
 		}
 	}
-}
-
-type storageService struct {
 }

@@ -2,11 +2,10 @@ package servingStrategies
 
 import (
 	"github.com/elazarl/goproxy"
-	comService "github.com/vaetern/moxyServer/communicationBodyService"
+	commStoreService "github.com/vaetern/moxyServer/communicationBodyService"
 	"github.com/vaetern/moxyServer/servingStrategies/ComLog"
 	"net/http"
 	"log"
-	"database/sql"
 	_ "github.com/mattn/go-sqlite3"
 	"bytes"
 	"io/ioutil"
@@ -64,21 +63,14 @@ func (s ServeAndStoreStrategy) Start(operationPort *string, verbose *bool) {
 		})
 	proxyInstance.Verbose = *verbose
 
-	dataSourceName := "./local.db"
-	database, err := sql.Open("sqlite3", dataSourceName)
-
-	if err != nil {
-		log.Println(err)
-	}
-
-	commBody := comService.StoreService{}
-	commBody.ProcessStoring(comLogCh, *database)
+	commBody := commStoreService.NewStoreService()
+	commBody.ProcessStoring(comLogCh)
 
 	log.Fatal(http.ListenAndServe(":" + *operationPort, proxyInstance))
 }
 
 func stripAndGetHash(initial string) string {
-	soapBodyString := strings.TrimLeft(strings.TrimRight(initial,"</soap:Body>"),"<soap:Body>")
+	soapBodyString := strings.TrimLeft(strings.TrimRight(initial, "</soap:Body>"), "<soap:Body>")
 	hasher := md5.New()
 	hasher.Write([]byte(soapBodyString))
 	return hex.EncodeToString(hasher.Sum(nil))
