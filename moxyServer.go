@@ -6,7 +6,7 @@ import (
 	"flag"
 	"os"
 	"fmt"
-	"github.com/vaetern/moxyServer/servingStrategies"
+	ss "github.com/vaetern/moxyServer/servingStrategies"
 	"errors"
 )
 
@@ -21,6 +21,7 @@ func main() {
 	runtime.GOMAXPROCS(MaxProcesses)
 
 	servingStrategy, err := getServingStrategy(operationMode)
+
 	if err != nil{
 		log.Fatal(err)
 		os.Exit(1)
@@ -50,12 +51,12 @@ func handleStartupSetting() (*string, *string, *bool) {
 	return operationMode, operationPort, verboseMode
 }
 
-func getServingStrategy(operationMode *string) (strategy servingStrategies.ServingStrategy, err error){
+func getServingStrategy(operationMode *string) (strategy ss.ServingStrategy, err error){
 
 	if *operationMode == "store"{
-		strategy = servingStrategies.NewServeAndStoreStrategy()
+		strategy = ss.NewServeAndStoreStrategy()
 	} else if *operationMode == "cache"{
-		strategy = servingStrategies.NewServeFromCacheStrategy()
+		strategy = ss.NewServeFromCacheStrategy()
 	} else{
 		err = errors.New("Unexpected operation mode")
 	}
