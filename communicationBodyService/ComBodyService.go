@@ -34,12 +34,14 @@ func processStoringRoutine(ch <-chan ComLog.CommunicationLog, database sql.DB) {
 	log.Println("-> ready to serve")
 	for commLog := range ch {
 
-		log.Println("<-ch")
-		_, err := database.Exec("INSERT INTO `communication_log`"+
-			" (`target`, `responseKey`, `responseBody`, `date`) VALUES($1, $2, $3, $4)",
+		log.Println(commLog.Target)
+
+		_, err := database.Exec("INSERT OR IGNORE INTO `communication_log`"+
+			" (`target`, `responseKey`, `responseBody`, `date`) VALUES($1, $2, $3, $4);",
 			commLog.Target, commLog.ResponseKey, commLog.ResponseBody, time.Now())
 		if err != nil {
-			log.Println("Error writing to db")
+			log.Println("Error writing to db:")
+			log.Println(err)
 		}
 	}
 }

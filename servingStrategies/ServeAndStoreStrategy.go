@@ -52,7 +52,6 @@ func (s ServeAndStoreStrategy) Start(operationPort *string, verbose *bool) {
 			r.Body = ioutil.NopCloser(bytes.NewBuffer(rsBodyBytes))
 
 			comLogCh <- commLog
-			log.Println("ch<-")
 
 			return r
 		})
