@@ -14,6 +14,8 @@ const MaxProcesses = 2
 
 const ServingPort = "19501"
 
+const version = "1.001"
+
 func main() {
 
 	operationMode, operationPort, verboseMode := handleStartupSetting()
@@ -22,7 +24,7 @@ func main() {
 
 	servingStrategy, err := getServingStrategy(operationMode)
 
-	if err != nil{
+	if err != nil {
 		log.Fatal(err)
 		os.Exit(1)
 	}
@@ -31,6 +33,8 @@ func main() {
 }
 
 func handleStartupSetting() (*string, *string, *bool) {
+
+	fmt.Println("version: " + version)
 
 	fs := flag.NewFlagSet("moxy server", flag.ExitOnError)
 	operationMode := fs.String("mode", "", "Operation mode (store/cache)")
@@ -51,16 +55,15 @@ func handleStartupSetting() (*string, *string, *bool) {
 	return operationMode, operationPort, verboseMode
 }
 
-func getServingStrategy(operationMode *string) (strategy ss.ServingStrategy, err error){
+func getServingStrategy(operationMode *string) (strategy ss.ServingStrategy, err error) {
 
-	if *operationMode == "store"{
+	if *operationMode == "store" {
 		strategy = ss.NewServeAndStoreStrategy()
-	} else if *operationMode == "cache"{
+	} else if *operationMode == "cache" {
 		strategy = ss.NewServeFromCacheStrategy()
-	} else{
+	} else {
 		err = errors.New("Unexpected operation mode")
 	}
-
 
 	return strategy, err
 }
