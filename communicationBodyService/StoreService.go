@@ -37,12 +37,19 @@ func processStoringRoutine(ch <-chan ComLog.CommunicationLog, database sql.DB) {
 
 		log.Println(commLog.Target)
 
-		_, err := database.Exec("INSERT OR IGNORE INTO `communication_log`"+
-			" (`target`, `responseKey`, `responseBody`, `date`) VALUES($1, $2, $3, $4);",
-			commLog.Target, commLog.ResponseKey, commLog.ResponseBody, time.Now())
-		if err != nil {
-			log.Println("Error writing to db:")
-			log.Println(err)
+		if commLog.IsResponseFaulty() {
+
+			log.Println("x - faulty response")
+
+		} else {
+
+			_, err := database.Exec("INSERT OR IGNORE INTO `communication_log`"+
+				" (`target`, `responseKey`, `responseBody`, `date`) VALUES($1, $2, $3, $4);",
+				commLog.Target, commLog.ResponseKey, commLog.ResponseBody, time.Now())
+			if err != nil {
+				log.Println("Error writing to db:")
+				log.Println(err)
+			}
 		}
 	}
 }
@@ -61,7 +68,7 @@ func (ss *StoreService) GetBodyByKeyAndTarget(key string, target string) (respon
 		rows.Scan(&responseBody)
 	}
 
-	if i == 0{
+	if i == 0 {
 		err = errors.New("X - Response not found")
 	}
 
