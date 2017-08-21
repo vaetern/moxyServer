@@ -51,7 +51,9 @@ func (s ServeAndStoreStrategy) Start(operationPort *string, verbose *bool) {
 			commLog.ResponseBody = string(rsBodyString)
 			r.Body = ioutil.NopCloser(bytes.NewBuffer(rsBodyBytes))
 
-			comLogCh <- commLog
+			if !commLog.IsResponseFaulty() {
+				comLogCh <- commLog
+			}
 
 			return r
 		})
