@@ -35,7 +35,7 @@ func handleStartupSetting() (*string, *string, *bool) {
 	fs := flag.NewFlagSet("moxy server", flag.ExitOnError)
 	operationMode := fs.String("mode", "", "Operation mode (store/cache)")
 	operationPort := fs.String("port", ServingPort, "Serving port (default :19501)")
-	verboseMode := fs.Bool("verbose", true, "Verbose log")
+	verboseMode := fs.Bool("verbose", false, "Verbose log")
 
 	fs.Parse(os.Args[1:])
 
