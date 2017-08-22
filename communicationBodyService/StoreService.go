@@ -59,7 +59,7 @@ func (ss *StoreService) GetBodyByKeyAndTarget(key string, target string) (respon
 	responseBody = ""
 
 	rows, err := ss.db.Query("SELECT `responseBody` FROM `communication_log` "+
-		"WHERE `responseKey` = $1 AND `target`= $2 LIMIT 0,1",
+		"WHERE `responseKey` = $1 AND `target`= $2 ORDER BY id DESC LIMIT 0,1",
 		key, target)
 
 	i := 0
