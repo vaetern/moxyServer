@@ -2,7 +2,8 @@ package ComLog
 
 import "strings"
 
-const faultyString = "<Failure>"
+const failureString = "<Failure>"
+const errorsString = "<Errors>"
 
 type CommunicationLog struct{
 	Target       string
@@ -11,5 +12,5 @@ type CommunicationLog struct{
 }
 
 func (cl CommunicationLog) IsResponseFaulty () bool{
-	return strings.Contains(cl.ResponseBody,faultyString)
+	return strings.Contains(cl.ResponseBody, failureString) || strings.Contains(cl.ResponseBody, errorsString)
 }

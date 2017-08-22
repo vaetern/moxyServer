@@ -14,7 +14,7 @@ const MaxProcesses = 2
 
 const ServingPort = "19501"
 
-const version = "1.002"
+const version = "1.003"
 
 func main() {
 
