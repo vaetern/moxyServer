@@ -37,14 +37,14 @@ func handleStartupSetting() (*string, *string, *bool) {
 	fmt.Println("version: " + version)
 
 	fs := flag.NewFlagSet("moxy server", flag.ExitOnError)
-	operationMode := fs.String("mode", "", "Operation mode (store/cache)")
+	operationMode := fs.String("mode", "", "Operation mode (proxy/mock)")
 	operationPort := fs.String("port", ServingPort, "Serving port (default :19501)")
 	verboseMode := fs.Bool("verbose", false, "Verbose log")
 
 	fs.Parse(os.Args[1:])
 
 	fs.Usage = func() {
-		fmt.Println("Usage: moxyServer.exe -mode=store -port=19501 -verbose=1")
+		fmt.Println("Usage: moxyServer.exe -mode=proxy -port=19501 -verbose=1")
 	}
 
 	if *operationMode == "" {
@@ -57,12 +57,12 @@ func handleStartupSetting() (*string, *string, *bool) {
 
 func getServingStrategy(operationMode *string) (strategy ss.ServingStrategy, err error) {
 
-	if *operationMode == "store" {
+	if *operationMode == "proxy" {
 		strategy = ss.NewServeAndStoreStrategy()
-	} else if *operationMode == "cache" {
+	} else if *operationMode == "mock" {
 		strategy = ss.NewServeFromCacheStrategy()
 	} else {
-		err = errors.New("Unexpected operation mode")
+		err = errors.New("unexpected operation mode")
 	}
 
 	return strategy, err
